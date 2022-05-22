@@ -62,8 +62,10 @@ function PostListContainer() {
 
     useEffect(function () {
         if (selectedQuery && currentView === "all") {
+            setPosts([])
             fetchPosts()
         } else if (currentView === "faves") {
+            setPosts([])
             const offset = itemsPerPage * (parseInt(currentPage))
             setItemOffset(offset)
         }
@@ -75,8 +77,10 @@ function PostListContainer() {
         const endOffset = itemOffset + itemsPerPage;
         const items = favoritePosts.slice(itemOffset, endOffset)
 
-        setPageCount(pages)
-        setPosts(items)
+        if (currentView === 'faves') {
+            setPageCount(pages)
+            setPosts(items)
+        }
     }, [itemOffset, currentView, favoritePosts])
 
 
@@ -87,7 +91,10 @@ function PostListContainer() {
                 <PostFilter queryList={queryList} selectedQuery={selectedQuery} setSelectedQuery={setSelectedQuery} />
             }
             <PostList posts={posts} setFavoritePosts={setFavoritePosts} favoritePosts={favoritePosts} manageFavorites={manageFavorites} />
-            <Pagination setCurrentPage={setCurrentPage} pageCount={pageCount} />
+
+            { pageCount > 0 &&
+                <Pagination setCurrentPage={setCurrentPage} pageCount={pageCount} />
+            }
         </>
     )
 }
