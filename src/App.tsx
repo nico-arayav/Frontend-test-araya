@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import './App.css';
+
 
 interface PostCardProps {
     post: {
@@ -14,6 +15,11 @@ interface PostCardProps {
 interface PostListProps {
     posts: any[];
 }
+
+interface PostFilterProps {
+    setQuery: React.Dispatch<React.SetStateAction<string>>;
+}
+
 
 const PostCard = (props: PostCardProps) => {
     return (
@@ -46,10 +52,27 @@ function PostList(props: PostListProps) {
     )
 }
 
+function PostFilter(props: PostFilterProps) {
+
+    function onChangeHandler(e: React.ChangeEvent<HTMLSelectElement>) {
+        props.setQuery(e.currentTarget.value)
+    }
+
+    return (
+        <>
+            <select name="filter" id="news-select" onChange={onChangeHandler}>
+                <option value="angular">Angular</option>
+                <option value="react">Reactjs</option>
+                <option value="vuejs">Vuejs</option>
+            </select>
+        </>
+    )
+}
+
 function PostListContainer() {
 
     const currentPage = 0;
-    const query = 'angular';
+    const [query, setQuery] = useState('angular');
     const [posts, setPosts] = useState([]);
 
     const API_URL = `https://hn.algolia.com/api/v1/search_by_date?query=${query}&page=${currentPage}`;
@@ -70,6 +93,7 @@ function PostListContainer() {
 
     return (
         <>
+            <PostFilter setQuery={setQuery} />
             <PostList posts={posts} />
         </>
     )
