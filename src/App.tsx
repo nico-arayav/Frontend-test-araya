@@ -1,16 +1,29 @@
 import React, { useState, useEffect } from 'react';
+
 import ReactPaginate from 'react-paginate';
+import TimeAgo from 'javascript-time-ago'
+import en from 'javascript-time-ago/locale/en.json'
 
 import './App.css';
 
+TimeAgo.addDefaultLocale(en)
+
+type Post = {
+    author: string,
+    story_title: string,
+    story_url: string,
+    created_at: string
+}
 
 interface PostCardProps {
-    post: {
-        author: string,
-        story_title: string,
-        story_url: string,
-        created_at: string
-    };
+    post: Post;
+    setFavoritePosts: React.Dispatch<React.SetStateAction<Post[]>>;
+    isFavorite: boolean;
+    manageFavorites: Function;
+}
+
+interface SwitchViewProps {
+    setCurrentView: React.Dispatch<React.SetStateAction<string>>;
 }
 
 interface PostFilterProps {
@@ -20,7 +33,10 @@ interface PostFilterProps {
 }
 
 interface PostListProps {
-    posts: any[];
+    posts: Post[];
+    favoritePosts: Post[];
+    setFavoritePosts: React.Dispatch<React.SetStateAction<Post[]>>;
+    manageFavorites: Function;
 }
 
 interface PaginationProps {
@@ -28,13 +44,41 @@ interface PaginationProps {
     setCurrentPage: React.Dispatch<React.SetStateAction<string>>;
 }
 
+function SwitchView(props: SwitchViewProps) {
+
+    function onChangeHandler(e: React.FormEvent<HTMLInputElement>) {
+        props.setCurrentView((e.target as HTMLInputElement).value);
+    }
+
+    return (
+        <>
+            <div className="switch-field" onChange={onChangeHandler}>
+                <input type="radio" id="radio-all" name="view-switch" value="all" defaultChecked />
+                <label htmlFor="radio-one">All</label>
+                <input type="radio" id="radio-faves" name="view-switch" value="faves" />
+                <label htmlFor="radio-two">Faves</label>
+            </div>
+        </>
+    )
+}
+
 function PostCard(props: PostCardProps) {
+
+
+    const timeAgo = new TimeAgo('en-US')
+
+    function onClickHandler() {
+        const action = props.isFavorite ? "unfavorite" : "favorite"
+        props.manageFavorites(action, props.post)
+    }
+
     return (
         <div className='post'>
             <p>Author: {props.post.author}</p>
             <p>Title: {props.post.story_title}</p>
             <p>Url: {props.post.story_url}</p>
-            <p>Created at: {props.post.created_at}</p>
+            <p>Created at: {timeAgo.format(Date.parse(props.post.created_at))}</p>
+            <button onClick={onClickHandler}>{props.isFavorite ? "unfavorite" : "favorite"}</button>
 
             <hr />
         </div>
@@ -60,13 +104,20 @@ function PostFilter(props: PostFilterProps) {
 }
 
 function PostList(props: PostListProps) {
+
     return (
         <>
             {props.posts?.length > 0
                 ? (
                     <div className='container'>
                         {props.posts.map((post, index) => (
-                            <PostCard post={post} key={index} />
+                            <PostCard
+                                post={post}
+                                key={index}
+                                setFavoritePosts={props.setFavoritePosts}
+                                isFavorite={props.favoritePosts.find(el => el.author === post.author && el.story_title === post.story_title) ? true : false}
+                                manageFavorites={props.manageFavorites}
+                            />
                         ))}
                     </div>
                 ) : (
@@ -105,17 +156,25 @@ function Pagination(props: PaginationProps) {
 function PostListContainer() {
 
     const queryList = ['angular', 'reactjs', 'vuejs']
-    const [pageCount, setPageCount] = useState(0)
-    const [currentPage, setCurrentPage] = useState('0');
+    const itemsPerPage = 10
+    const [favoritePosts, setFavoritePosts] = useState<Post[]>([])
+    const [currentView, setCurrentView] = useState("all");
     const [selectedQuery, setSelectedQuery] = useState("");
-    const [posts, setPosts] = useState([]);
+    const [pageCount, setPageCount] = useState(0)
+    const [currentPage, setCurrentPage] = useState("0");
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [itemOffset, setItemOffset] = useState(0);
 
     const API_URL = `https://hn.algolia.com/api/v1/search_by_date?query=${selectedQuery}&page=${currentPage}`;
 
+
     useEffect(function () {
-        const lastSelected = localStorage.getItem('selectedQuery') ?? "";
-        setSelectedQuery(lastSelected);
+        const savedSelectedQuery = localStorage.getItem('selectedQuery') ?? "";
+        setSelectedQuery(savedSelectedQuery);
+        const savedFavoritePosts = JSON.parse(localStorage.getItem('favoritePosts') || "[]");
+        setFavoritePosts(savedFavoritePosts)
     }, [])
+
 
     async function fetchPosts() {
         const response = await fetch(`${API_URL}`);
@@ -128,16 +187,44 @@ function PostListContainer() {
         setPosts(tempPosts)
     }
 
-    useEffect(function () {
-        if (selectedQuery) {
-            fetchPosts()
+
+    function manageFavorites(action: string, post: Post) {
+        if (action === "favorite") {
+            setFavoritePosts([...favoritePosts, post])
+        } else {
+            setFavoritePosts(favoritePosts.filter((el) => el.author !== post.author && el.story_title !== post.story_title))
         }
-    }, [selectedQuery, currentPage]) // eslint-disable-line react-hooks/exhaustive-deps
+        localStorage.setItem('favoritePosts', JSON.stringify(favoritePosts))
+    }
+
+
+    useEffect(function () {
+        if (selectedQuery && currentView === "all") {
+            fetchPosts()
+        } else if (currentView === "faves") {
+            const offset = itemsPerPage * (parseInt(currentPage))
+            setItemOffset(offset)
+        }
+    }, [selectedQuery, currentPage, currentView, favoritePosts]) // eslint-disable-line react-hooks/exhaustive-deps
+
+
+    useEffect(function () {
+        const pages = favoritePosts.length > 0 ? Math.ceil(favoritePosts.length / itemsPerPage) : 1
+        const endOffset = itemOffset + itemsPerPage;
+        const items = favoritePosts.slice(itemOffset, endOffset)
+
+        setPageCount(pages)
+        setPosts(items)
+    }, [itemOffset, currentView, favoritePosts])
+
 
     return (
         <>
-            <PostFilter queryList={queryList} selectedQuery={selectedQuery} setSelectedQuery={setSelectedQuery} />
-            <PostList posts={posts} />
+            <SwitchView setCurrentView={setCurrentView} />
+            {currentView === "all" &&
+                <PostFilter queryList={queryList} selectedQuery={selectedQuery} setSelectedQuery={setSelectedQuery} />
+            }
+            <PostList posts={posts} setFavoritePosts={setFavoritePosts} favoritePosts={favoritePosts} manageFavorites={manageFavorites} />
             <Pagination setCurrentPage={setCurrentPage} pageCount={pageCount} />
         </>
     )
