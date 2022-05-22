@@ -158,8 +158,10 @@ function PostListContainer() {
     const API_URL = `https://hn.algolia.com/api/v1/search_by_date?query=${selectedQuery}&page=${currentPage}`;
 
     useEffect(function () {
-        const lastSelected = localStorage.getItem('selectedQuery') ?? "";
-        setSelectedQuery(lastSelected);
+        const savedSelectedQuery = localStorage.getItem('selectedQuery') ?? "";
+        setSelectedQuery(savedSelectedQuery);
+        const savedFavoritePosts = JSON.parse(localStorage.getItem('favoritePosts') || "[]");
+        setFavoritePosts(savedFavoritePosts)
     }, [])
 
     async function fetchPosts() {
@@ -177,8 +179,9 @@ function PostListContainer() {
         if (action === "favorite") {
             setFavoritePosts([...favoritePosts, post])
         } else {
-
+            setFavoritePosts(favoritePosts.filter((el) => el.author !== post.author && el.story_title !== post.story_title))
         }
+        localStorage.setItem('favoritePosts', JSON.stringify(favoritePosts))
     }
 
     useEffect(function () {
