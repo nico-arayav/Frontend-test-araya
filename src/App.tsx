@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ReactPaginate from 'react-paginate';
 
 import './App.css';
 
@@ -12,44 +13,30 @@ interface PostCardProps {
     };
 }
 
-interface PostListProps {
-    posts: any[];
-}
-
 interface PostFilterProps {
     setQuery: React.Dispatch<React.SetStateAction<string>>;
 }
 
+interface PostListProps {
+    posts: any[];
+}
 
-const PostCard = (props: PostCardProps) => {
+interface PaginationProps {
+    pageCount: number
+    setCurrentPage: React.Dispatch<React.SetStateAction<string>>;
+}
+
+function PostCard(props: PostCardProps) {
     return (
         <div className='post'>
             <p>Author: {props.post.author}</p>
             <p>Title: {props.post.story_title}</p>
             <p>Url: {props.post.story_url}</p>
             <p>Created at: {props.post.created_at}</p>
-            
+
             <hr />
         </div>
-    )
-}
-
-function PostList(props: PostListProps) {
-    return (
-        <>
-            {props.posts?.length > 0 
-            ?   (
-                    <div className='container'>
-                        {props.posts.map((post, index) => (
-                            <PostCard post={post} key={index} />
-                        ))}
-                    </div>
-                ) : (
-                    <h2>No posts found</h2>
-                )
-            }
-        </>
-    )
+    );
 }
 
 function PostFilter(props: PostFilterProps) {
@@ -66,12 +53,56 @@ function PostFilter(props: PostFilterProps) {
                 <option value="vuejs">Vuejs</option>
             </select>
         </>
+    );
+}
+
+function PostList(props: PostListProps) {
+    return (
+        <>
+            {props.posts?.length > 0
+                ? (
+                    <div className='container'>
+                        {props.posts.map((post, index) => (
+                            <PostCard post={post} key={index} />
+                        ))}
+                    </div>
+                ) : (
+                    <h2>No posts found</h2>
+                )
+            }
+        </>
+    )
+}
+
+function Pagination(props: PaginationProps) {
+
+    function handlePageChange(selectedObject: any) {
+		props.setCurrentPage(selectedObject.selected);
+	};
+
+    return (
+        <>
+            <ReactPaginate
+                pageCount={props.pageCount}
+                pageRangeDisplayed={9}
+                marginPagesDisplayed={0}
+                onPageChange={handlePageChange}
+                containerClassName={'pagination'}
+                previousLinkClassName={'page'}
+                breakClassName={'page'}
+                nextLinkClassName={'page'}
+                pageClassName={'page'}
+                disabledClassName={'disabled'}
+                activeClassName={'active'}
+            />
+        </>
     )
 }
 
 function PostListContainer() {
 
-    const currentPage = 0;
+    const [pageCount, setPageCount] = useState(0)
+    const [currentPage, setCurrentPage] = useState('0');
     const [query, setQuery] = useState('angular');
     const [posts, setPosts] = useState([]);
 
@@ -80,21 +111,23 @@ function PostListContainer() {
     async function fetchPosts() {
         const response = await fetch(`${API_URL}`);
         const data = await response.json();
-        const tempPosts = data.hits.filter(function(obj: any) {
+        const tempPosts = data.hits.filter(function (obj: any) {
             return (obj.author != null && obj.story_title != null && obj.story_url != null && obj.created_at != null)
         })
 
+        setPageCount(data.nbPages)
         setPosts(tempPosts)
     }
 
-    useEffect(function() {
+    useEffect(function () {
         fetchPosts()
-    }, [query]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [query, currentPage]) // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <>
             <PostFilter setQuery={setQuery} />
             <PostList posts={posts} />
+            <Pagination setCurrentPage={setCurrentPage} pageCount={pageCount} />
         </>
     )
 }
