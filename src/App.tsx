@@ -14,7 +14,9 @@ interface PostCardProps {
 }
 
 interface PostFilterProps {
-    setQuery: React.Dispatch<React.SetStateAction<string>>;
+    setSelectedQuery: React.Dispatch<React.SetStateAction<string>>;
+    selectedQuery: string;
+    queryList: string[];
 }
 
 interface PostListProps {
@@ -42,15 +44,16 @@ function PostCard(props: PostCardProps) {
 function PostFilter(props: PostFilterProps) {
 
     function onChangeHandler(e: React.ChangeEvent<HTMLSelectElement>) {
-        props.setQuery(e.currentTarget.value)
+        localStorage.setItem('selectedQuery', e.currentTarget.value)
+        props.setSelectedQuery(e.currentTarget.value)
     }
 
     return (
         <>
-            <select name="filter" id="news-select" onChange={onChangeHandler}>
-                <option value="angular">Angular</option>
-                <option value="react">Reactjs</option>
-                <option value="vuejs">Vuejs</option>
+            <select name="filter" id="news-select" onChange={onChangeHandler} value={props.selectedQuery}>
+                {props.queryList.map((query, index) => (
+                    <option value={query} key={index}>{query}</option>
+                ))}
             </select>
         </>
     );
@@ -77,8 +80,8 @@ function PostList(props: PostListProps) {
 function Pagination(props: PaginationProps) {
 
     function handlePageChange(selectedObject: any) {
-		props.setCurrentPage(selectedObject.selected);
-	};
+        props.setCurrentPage(selectedObject.selected);
+    };
 
     return (
         <>
@@ -101,12 +104,18 @@ function Pagination(props: PaginationProps) {
 
 function PostListContainer() {
 
+    const queryList = ['angular', 'reactjs', 'vuejs']
     const [pageCount, setPageCount] = useState(0)
     const [currentPage, setCurrentPage] = useState('0');
-    const [query, setQuery] = useState('angular');
+    const [selectedQuery, setSelectedQuery] = useState("");
     const [posts, setPosts] = useState([]);
 
-    const API_URL = `https://hn.algolia.com/api/v1/search_by_date?query=${query}&page=${currentPage}`;
+    const API_URL = `https://hn.algolia.com/api/v1/search_by_date?query=${selectedQuery}&page=${currentPage}`;
+
+    useEffect(function () {
+        const lastSelected = localStorage.getItem('selectedQuery') ?? "";
+        setSelectedQuery(lastSelected);
+    }, [])
 
     async function fetchPosts() {
         const response = await fetch(`${API_URL}`);
@@ -120,12 +129,14 @@ function PostListContainer() {
     }
 
     useEffect(function () {
-        fetchPosts()
-    }, [query, currentPage]) // eslint-disable-line react-hooks/exhaustive-deps
+        if (selectedQuery) {
+            fetchPosts()
+        }
+    }, [selectedQuery, currentPage]) // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <>
-            <PostFilter setQuery={setQuery} />
+            <PostFilter queryList={queryList} selectedQuery={selectedQuery} setSelectedQuery={setSelectedQuery} />
             <PostList posts={posts} />
             <Pagination setCurrentPage={setCurrentPage} pageCount={pageCount} />
         </>
