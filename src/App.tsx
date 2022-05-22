@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
+
 import ReactPaginate from 'react-paginate';
+import TimeAgo from 'javascript-time-ago'
+import en from 'javascript-time-ago/locale/en.json'
 
 import './App.css';
+
+TimeAgo.addDefaultLocale(en)
 
 type Post = {
     author: string,
@@ -59,6 +64,9 @@ function SwitchView(props: SwitchViewProps) {
 
 function PostCard(props: PostCardProps) {
 
+
+    const timeAgo = new TimeAgo('en-US')
+
     function onClickHandler() {
         const action = props.isFavorite ? "unfavorite" : "favorite"
         props.manageFavorites(action, props.post)
@@ -69,7 +77,7 @@ function PostCard(props: PostCardProps) {
             <p>Author: {props.post.author}</p>
             <p>Title: {props.post.story_title}</p>
             <p>Url: {props.post.story_url}</p>
-            <p>Created at: {props.post.created_at}</p>
+            <p>Created at: {timeAgo.format(Date.parse(props.post.created_at))}</p>
             <button onClick={onClickHandler}>{props.isFavorite ? "unfavorite" : "favorite"}</button>
 
             <hr />
@@ -148,14 +156,17 @@ function Pagination(props: PaginationProps) {
 function PostListContainer() {
 
     const queryList = ['angular', 'reactjs', 'vuejs']
+    const itemsPerPage = 10
     const [favoritePosts, setFavoritePosts] = useState<Post[]>([])
     const [currentView, setCurrentView] = useState("all");
     const [selectedQuery, setSelectedQuery] = useState("");
     const [pageCount, setPageCount] = useState(0)
-    const [currentPage, setCurrentPage] = useState('0');
+    const [currentPage, setCurrentPage] = useState("0");
     const [posts, setPosts] = useState<Post[]>([]);
+    const [itemOffset, setItemOffset] = useState(0);
 
     const API_URL = `https://hn.algolia.com/api/v1/search_by_date?query=${selectedQuery}&page=${currentPage}`;
+
 
     useEffect(function () {
         const savedSelectedQuery = localStorage.getItem('selectedQuery') ?? "";
@@ -163,6 +174,7 @@ function PostListContainer() {
         const savedFavoritePosts = JSON.parse(localStorage.getItem('favoritePosts') || "[]");
         setFavoritePosts(savedFavoritePosts)
     }, [])
+
 
     async function fetchPosts() {
         const response = await fetch(`${API_URL}`);
@@ -175,6 +187,7 @@ function PostListContainer() {
         setPosts(tempPosts)
     }
 
+
     function manageFavorites(action: string, post: Post) {
         if (action === "favorite") {
             setFavoritePosts([...favoritePosts, post])
@@ -184,18 +197,33 @@ function PostListContainer() {
         localStorage.setItem('favoritePosts', JSON.stringify(favoritePosts))
     }
 
+
     useEffect(function () {
         if (selectedQuery && currentView === "all") {
             fetchPosts()
         } else if (currentView === "faves") {
-            setPosts(favoritePosts)
+            const offset = itemsPerPage * (parseInt(currentPage))
+            setItemOffset(offset)
         }
-    }, [selectedQuery, currentPage, currentView, favoritePosts])
+    }, [selectedQuery, currentPage, currentView, favoritePosts]) // eslint-disable-line react-hooks/exhaustive-deps
+
+
+    useEffect(function () {
+        const pages = favoritePosts.length > 0 ? Math.ceil(favoritePosts.length / itemsPerPage) : 1
+        const endOffset = itemOffset + itemsPerPage;
+        const items = favoritePosts.slice(itemOffset, endOffset)
+
+        setPageCount(pages)
+        setPosts(items)
+    }, [itemOffset, currentView, favoritePosts])
+
 
     return (
         <>
             <SwitchView setCurrentView={setCurrentView} />
-            <PostFilter queryList={queryList} selectedQuery={selectedQuery} setSelectedQuery={setSelectedQuery} />
+            {currentView === "all" &&
+                <PostFilter queryList={queryList} selectedQuery={selectedQuery} setSelectedQuery={setSelectedQuery} />
+            }
             <PostList posts={posts} setFavoritePosts={setFavoritePosts} favoritePosts={favoritePosts} manageFavorites={manageFavorites} />
             <Pagination setCurrentPage={setCurrentPage} pageCount={pageCount} />
         </>
