@@ -18,7 +18,7 @@ type Post = {
 function PostListContainer() {
 
     const queryList = ['angular', 'reactjs', 'vuejs']
-    const itemsPerPage = 10
+    const itemsPerPage = 14
     const [favoritePosts, setFavoritePosts] = useState<Post[]>([])
     const [currentView, setCurrentView] = useState("all");
     const [selectedQuery, setSelectedQuery] = useState("");
@@ -33,7 +33,7 @@ function PostListContainer() {
     useEffect(function () {
         const savedSelectedQuery = localStorage.getItem('selectedQuery') ?? "";
         setSelectedQuery(savedSelectedQuery);
-        const savedFavoritePosts = JSON.parse(localStorage.getItem('favoritePosts') || "[]");
+        const savedFavoritePosts = JSON.parse(localStorage.getItem('favoritePosts') ?? "[]");
         setFavoritePosts(savedFavoritePosts)
     }, [])
 
@@ -52,11 +52,14 @@ function PostListContainer() {
 
     function manageFavorites(action: string, post: Post) {
         if (action === "favorite") {
-            setFavoritePosts([...favoritePosts, post])
+            const favedPosts = [...favoritePosts, post]
+            setFavoritePosts(favedPosts)
+            localStorage.setItem('favoritePosts', JSON.stringify(favedPosts))
         } else {
-            setFavoritePosts(favoritePosts.filter((el) => el.author !== post.author && el.story_title !== post.story_title))
+            const favedPosts = favoritePosts.filter((el) => el.author !== post.author && el.story_title !== post.story_title)
+            setFavoritePosts(favedPosts)
+            localStorage.setItem('favoritePosts', JSON.stringify(favedPosts))
         }
-        localStorage.setItem('favoritePosts', JSON.stringify(favoritePosts))
     }
 
 
@@ -69,19 +72,24 @@ function PostListContainer() {
             const offset = itemsPerPage * (parseInt(currentPage))
             setItemOffset(offset)
         }
-    }, [selectedQuery, currentPage, currentView, favoritePosts]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [selectedQuery, currentPage, currentView]) // eslint-disable-line react-hooks/exhaustive-deps
 
 
     useEffect(function () {
         const pages = favoritePosts.length > 0 ? Math.ceil(favoritePosts.length / itemsPerPage) : 1
         const endOffset = itemOffset + itemsPerPage;
         const items = favoritePosts.slice(itemOffset, endOffset)
+        
+
+        if (parseInt(currentPage) > pages) {
+            setCurrentPage((pages - 1).toString())
+        }
 
         if (currentView === 'faves') {
             setPageCount(pages)
             setPosts(items)
         }
-    }, [itemOffset, currentView, favoritePosts])
+    }, [itemOffset, currentView, currentPage, favoritePosts])
 
 
     return (
