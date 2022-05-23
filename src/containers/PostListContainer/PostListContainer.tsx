@@ -63,11 +63,11 @@ function PostListContainer() {
     // Initialization
     useEffect(function () {
         // Data fetch
+        const savedSelectedQuery = localStorage.getItem('selectedQuery') ?? selectedQuery;
+        setSelectedQuery(savedSelectedQuery);
         if (currentView === "all") {
             fetchPosts()
         }
-        const savedSelectedQuery = localStorage.getItem('selectedQuery') ?? selectedQuery;
-        setSelectedQuery(savedSelectedQuery);
         const savedFavoritePosts = JSON.parse(localStorage.getItem('favoritePosts') ?? "[]");
         const sortedSavedFavoritePosts = savedFavoritePosts.sort((objA:Post, objB:Post) => { return Date.parse(objB.created_at) - Date.parse(objA.created_at) })
         setFavoritePosts(sortedSavedFavoritePosts)
