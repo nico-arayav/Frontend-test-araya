@@ -2,6 +2,7 @@ import React from 'react';
 
 import PostCard from '../../components/PostCard/PostCard';
 
+import './PostList.css'
 
 type Post = {
     author: string,
@@ -22,7 +23,7 @@ function PostList(props: PostListProps) {
         <>
             {props.posts?.length > 0
                 ? (
-                    <div className='container'>
+                    <div className='list-container'>
                         {props.posts.map((post, index) => (
                             <PostCard
                                 post={post}
@@ -34,7 +35,7 @@ function PostList(props: PostListProps) {
                         ))}
                     </div>
                 ) : (
-                    <h2>No posts found</h2>
+                    null
                 )
             }
         </>

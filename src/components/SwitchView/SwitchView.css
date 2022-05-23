@@ -1,0 +1,67 @@
+@font-face {
+    font-family: 'roboto-regular';
+    src: url('../../assets/font/Roboto/Roboto-Regular.ttf');
+}
+
+.switch-field {
+    display: flex;
+    margin-bottom: 36px;
+    overflow: hidden;
+    justify-content: center;
+}
+
+.switch-field input {
+    position: absolute !important;
+    clip: rect(0, 0, 0, 0);
+    height: 1px;
+    width: 1px;
+    border: 0;
+    overflow: hidden;
+}
+
+.switch-field label {
+    background-color: #fcfcfc;
+    margin-right: -1px;
+    width: 98px;
+    height: 28px;
+    border: solid 1px #d6d6d6;
+    font-family: roboto-regular;
+    font-size: 16px;
+    font-weight: 500;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1.75;
+    letter-spacing: normal;
+    text-align: center;
+    color: #606060;
+}
+
+.switch-field label:hover {
+    cursor: pointer;
+}
+
+.switch-field input:checked+label:first-of-type {
+    box-shadow: none;
+    border-top: solid 1px #1797ff;
+    border-bottom: solid 1px #1797ff;
+    border-left: solid 1px #1797ff;
+    color: #1797ff;
+}
+
+.switch-field input:checked+label:last-of-type {
+    box-shadow: none;
+    border-top: solid 1px #1797ff;
+    border-bottom: solid 1px #1797ff;
+    border-right: solid 1px #1797ff;
+    color: #1797ff;
+}
+
+.switch-field label:first-of-type {
+    border-radius: 2px 0 0 2px;
+    border-right: solid 1px #d6d6d6;
+}
+
+.switch-field label:last-of-type {
+    border-radius: 0 2px 2px 0;
+    border-left: solid 1px #d6d6d6;
+}
