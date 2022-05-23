@@ -88,8 +88,6 @@ function PostListContainer() {
         if (currentView === "faves") {
             const pages = favoritePosts.length > 0 ? Math.ceil(favoritePosts.length / itemsPerPage) : 1
 
-            console.log(itemOffset, currentPage, pages);
-
             if (parseInt(currentPage) > pages - 1) {
                 setCurrentPage((pages - 1).toString())
             }
