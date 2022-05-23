@@ -35,7 +35,7 @@ function PostList(props: PostListProps) {
                         ))}
                     </div>
                 ) : (
-                    <h2></h2>
+                    null
                 )
             }
         </>

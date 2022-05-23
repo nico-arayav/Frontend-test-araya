@@ -4,7 +4,7 @@
     vertical-align: middle;
     left: 50%;
     align-items: center;
-    padding-left: opx;
+    padding-left: 0px;
 }
 
 .page {
@@ -42,10 +42,6 @@
     margin-right: 10px;
     cursor: pointer;
     height: 32px;
-}
-
-.break {
-    /* padding: 10px; */
 }
 
 .next {

@@ -8,6 +8,7 @@ import './Pagination.css'
 interface PaginationProps {
     pageCount: number
     setCurrentPage: React.Dispatch<React.SetStateAction<string>>;
+    pageRangeDisplayed: number;
 }
 
 
@@ -21,7 +22,7 @@ function Pagination(props: PaginationProps) {
         <div className='col-12'>
             <ReactPaginate
                 pageCount={props.pageCount}
-                pageRangeDisplayed={9}
+                pageRangeDisplayed={props.pageRangeDisplayed}
                 marginPagesDisplayed={0}
                 onPageChange={handlePageChange}
                 containerClassName={'pagination-container'}

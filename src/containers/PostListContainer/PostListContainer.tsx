@@ -6,7 +6,6 @@ import PostList from '../../components/PostList/PostList';
 import Pagination from '../../components/Pagination/Pagination';
 
 
-
 type Post = {
     author: string,
     story_title: string,
@@ -19,6 +18,7 @@ function PostListContainer() {
 
     const queryList = ['angular', 'reactjs', 'vuejs']
     const itemsPerPage = 14
+    const [pageRangeDisplayed, setPageRangeDisplayed] = useState(window.innerWidth > 768 ? 9 : 5)
     const [favoritePosts, setFavoritePosts] = useState<Post[]>([])
     const [currentView, setCurrentView] = useState("all");
     const [selectedQuery, setSelectedQuery] = useState("");
@@ -28,14 +28,6 @@ function PostListContainer() {
     const [itemOffset, setItemOffset] = useState(0);
 
     const API_URL = `https://hn.algolia.com/api/v1/search_by_date?query=${selectedQuery}&page=${currentPage}`;
-
-
-    useEffect(function () {
-        const savedSelectedQuery = localStorage.getItem('selectedQuery') ?? "";
-        setSelectedQuery(savedSelectedQuery);
-        const savedFavoritePosts = JSON.parse(localStorage.getItem('favoritePosts') ?? "[]");
-        setFavoritePosts(savedFavoritePosts)
-    }, [])
 
 
     async function fetchPosts() {
@@ -63,31 +55,56 @@ function PostListContainer() {
     }
 
 
+    function handleResize() {
+        setPageRangeDisplayed(window.innerWidth > 768 ? 9 : 5)
+    }
+
+
+    // Initialization
+    useEffect(function () {
+        // Data fetch
+        const savedSelectedQuery = localStorage.getItem('selectedQuery') ?? "";
+        setSelectedQuery(savedSelectedQuery);
+        const savedFavoritePosts = JSON.parse(localStorage.getItem('favoritePosts') ?? "[]");
+        setFavoritePosts(savedFavoritePosts)
+
+        // Handling window resize 
+        window.addEventListener("resize", handleResize);
+        handleResize()
+        return () => window.removeEventListener("resize", handleResize);
+    }, [])
+
+
+    // Handle state changes in 'all' view 
     useEffect(function () {
         if (selectedQuery && currentView === "all") {
-            setPosts([])
             fetchPosts()
-        } else if (currentView === "faves") {
-            setPosts([])
-            const offset = itemsPerPage * (parseInt(currentPage))
-            setItemOffset(offset)
         }
     }, [selectedQuery, currentPage, currentView]) // eslint-disable-line react-hooks/exhaustive-deps
 
 
+    // Handle state changes in 'faves' view 
     useEffect(function () {
-        const pages = favoritePosts.length > 0 ? Math.ceil(favoritePosts.length / itemsPerPage) : 1
-        const endOffset = itemOffset + itemsPerPage;
-        const items = favoritePosts.slice(itemOffset, endOffset)
-        
+        if (currentView === "faves") {
+            const pages = favoritePosts.length > 0 ? Math.ceil(favoritePosts.length / itemsPerPage) : 1
 
-        if (parseInt(currentPage) > pages) {
-            setCurrentPage((pages - 1).toString())
-        }
+            console.log(itemOffset, currentPage, pages);
 
-        if (currentView === 'faves') {
+            if (parseInt(currentPage) > pages - 1) {
+                setCurrentPage((pages - 1).toString())
+            }
+            
+            const offset = itemsPerPage * (parseInt(currentPage))
+            setItemOffset(offset)
+
+            const endOffset = itemOffset + itemsPerPage;
+            const items = favoritePosts.slice(itemOffset, endOffset)
+
+            
+
             setPageCount(pages)
             setPosts(items)
+
         }
     }, [itemOffset, currentView, currentPage, favoritePosts])
 
@@ -95,13 +112,15 @@ function PostListContainer() {
     return (
         <>
             <SwitchView setCurrentView={setCurrentView} />
+
             {currentView === "all" &&
                 <PostFilter queryList={queryList} selectedQuery={selectedQuery} setSelectedQuery={setSelectedQuery} />
             }
+
             <PostList posts={posts} setFavoritePosts={setFavoritePosts} favoritePosts={favoritePosts} manageFavorites={manageFavorites} />
 
-            { pageCount > 0 &&
-                <Pagination setCurrentPage={setCurrentPage} pageCount={pageCount} />
+            {pageCount > 1 &&
+                <Pagination setCurrentPage={setCurrentPage} pageCount={pageCount} pageRangeDisplayed={pageRangeDisplayed} />
             }
         </>
     )
