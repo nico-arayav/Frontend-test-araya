@@ -21,7 +21,7 @@ function PostListContainer() {
     const [pageRangeDisplayed, setPageRangeDisplayed] = useState(window.innerWidth > 768 ? 9 : 5)
     const [favoritePosts, setFavoritePosts] = useState<Post[]>([])
     const [currentView, setCurrentView] = useState("all");
-    const [selectedQuery, setSelectedQuery] = useState("");
+    const [selectedQuery, setSelectedQuery] = useState('');
     const [pageCount, setPageCount] = useState(0)
     const [currentPage, setCurrentPage] = useState("0");
     const [posts, setPosts] = useState<Post[]>([]);
@@ -45,11 +45,11 @@ function PostListContainer() {
     function manageFavorites(action: string, post: Post) {
         if (action === "favorite") {
             const favedPosts = [...favoritePosts, post]
-            setFavoritePosts(favedPosts)
+            setFavoritePosts(favedPosts.sort((objA:Post, objB:Post) => { return Date.parse(objB.created_at) - Date.parse(objA.created_at) }))
             localStorage.setItem('favoritePosts', JSON.stringify(favedPosts))
         } else {
-            const favedPosts = favoritePosts.filter((el) => el.author !== post.author && el.story_title !== post.story_title)
-            setFavoritePosts(favedPosts)
+            const favedPosts = favoritePosts.filter((el) => el.author !== post.author && el.story_title !== post.story_title && el.created_at !== post.created_at )
+            setFavoritePosts(favedPosts.sort((objA:Post, objB:Post) => { return Date.parse(objB.created_at) - Date.parse(objA.created_at) }))
             localStorage.setItem('favoritePosts', JSON.stringify(favedPosts))
         }
     }
@@ -63,11 +63,14 @@ function PostListContainer() {
     // Initialization
     useEffect(function () {
         // Data fetch
-        fetchPosts()
-        const savedSelectedQuery = localStorage.getItem('selectedQuery') ?? "";
+        if (selectedQuery !=='' && currentView === "all") {
+            fetchPosts()
+        }
+        const savedSelectedQuery = localStorage.getItem('selectedQuery') ?? selectedQuery;
         setSelectedQuery(savedSelectedQuery);
         const savedFavoritePosts = JSON.parse(localStorage.getItem('favoritePosts') ?? "[]");
-        setFavoritePosts(savedFavoritePosts)
+        const sortedSavedFavoritePosts = savedFavoritePosts.sort((objA:Post, objB:Post) => { return Date.parse(objB.created_at) - Date.parse(objA.created_at) })
+        setFavoritePosts(sortedSavedFavoritePosts)
 
         // Handling window resize 
         window.addEventListener("resize", handleResize);
@@ -78,7 +81,7 @@ function PostListContainer() {
 
     // Handle state changes in 'all' view 
     useEffect(function () {
-        if (selectedQuery && currentView === "all") {
+        if (selectedQuery !=='' && currentView === "all") {
             fetchPosts()
         }
     }, [selectedQuery, currentPage, currentView]) // eslint-disable-line react-hooks/exhaustive-deps

@@ -3,8 +3,9 @@ import React from 'react';
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
 
-import favorited from "../../assets/iconmonstr-favorite-1.png"
-import unfavorited from "../../assets/iconmonstr-favorite-2.png"
+import favorited from "../../assets/favorite-1.png"
+import unfavorited from "../../assets/favorite-2.png"
+import time from "../../assets/time.png"
 
 import './PostCard.css';
 
@@ -43,11 +44,11 @@ function PostCard(props: PostCardProps) {
         <div className='card-container col-6'>
             <div className='post-card' onClick={onCardClickHandler} >
                 <div className='desc center'>
-                    <p className='time-author'>{timeAgo.format(Date.parse(props.post.created_at))} by {props.post.author}</p>
+                    <p className='time-author'><img className='time-icon' src={time} alt="time icon" /> {timeAgo.format(Date.parse(props.post.created_at))} by {props.post.author}</p>
                     <p className='title'>{props.post.story_title}</p>
                 </div>
                 <div className='favorite center'>
-                    <img src={props.isFavorite ? favorited : unfavorited} alt="favorite" onClick={onFavoriteClickHandler} />
+                    <img src={props.isFavorite ? favorited : unfavorited} alt="favorite icon" onClick={onFavoriteClickHandler} />
                 </div>
             </div>
         </div>

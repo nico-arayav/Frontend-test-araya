@@ -14,7 +14,7 @@ div.card-container {
 }
 
 div.post-card {
-    height: 150px;
+    min-height: 100px;
     flex-flow: row;
     overflow: hidden;
     position: relative;
@@ -27,10 +27,22 @@ div.post-card {
     font-family: roboto;
 }
 
+div.post-card:hover {
+    opacity: 0.4;
+}
+
 p.time-author {
     margin: 5px;
     font-size: 11px;
-    color:#767676
+    color:#767676;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: 30px;
+}
+
+p.time-author img {
+    vertical-align: middle;
+
 }
 
 p.title {
@@ -41,7 +53,7 @@ p.title {
 
 div.desc {
     width: 80%;
-    position: relative;
+    position: absolute;
     box-sizing: border-box;
 }
 
