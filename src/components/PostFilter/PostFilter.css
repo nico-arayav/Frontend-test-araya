@@ -1,6 +1,7 @@
 .filter-container {
     overflow: auto;
     margin-left: 10px;
+    margin-bottom: 36px;
 }
 
 .filter-select {
