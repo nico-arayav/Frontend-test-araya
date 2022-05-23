@@ -63,7 +63,7 @@ function PostListContainer() {
     // Initialization
     useEffect(function () {
         // Data fetch
-        const savedSelectedQuery = localStorage.getItem('selectedQuery') ?? selectedQuery;
+        const savedSelectedQuery = localStorage.getItem('selectedQuery') ?? queryList[0];
         setSelectedQuery(savedSelectedQuery);
         if (currentView === "all") {
             fetchPosts()
