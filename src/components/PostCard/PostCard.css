@@ -1,0 +1,62 @@
+@font-face {
+    font-family: 'roboto';
+    src: url('../../assets/font/Roboto/Roboto-Medium.ttf');
+}
+
+.center {
+    position: absolute;
+    top: 50%;
+    transform: translate(0%, -50%);
+  }
+
+div.card-container {
+    padding: 10px;
+}
+
+div.post-card {
+    height: 150px;
+    flex-flow: row;
+    overflow: hidden;
+    position: relative;
+    padding: 10px;
+    text-align: left;
+    border-radius: 6px;
+    border: solid 1px #979797;
+    background-color: #fff;
+    cursor: pointer;
+    font-family: roboto;
+}
+
+p.time-author {
+    margin: 5px;
+    font-size: 11px;
+    color:#767676
+}
+
+p.title {
+    margin: 5px;
+    font-size: 14px;
+    color: #6b6b6b;
+}
+
+div.desc {
+    width: 80%;
+    position: relative;
+    box-sizing: border-box;
+}
+
+div.favorite {
+    width: 20%;
+    right: 0px;
+    height: 100%;  
+    background-color: rgb(96, 96, 96, 0.06);
+}
+
+div.favorite img {
+    position: relative;
+    opacity: 1;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+}

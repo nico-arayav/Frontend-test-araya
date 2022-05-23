@@ -2,6 +2,8 @@ import React from 'react';
 
 import ReactPaginate from 'react-paginate';
 
+import './Pagination.css'
+
 
 interface PaginationProps {
     pageCount: number
@@ -16,21 +18,23 @@ function Pagination(props: PaginationProps) {
     };
 
     return (
-        <>
+        <div className='col-12'>
             <ReactPaginate
                 pageCount={props.pageCount}
                 pageRangeDisplayed={9}
                 marginPagesDisplayed={0}
                 onPageChange={handlePageChange}
-                containerClassName={'pagination'}
+                containerClassName={'pagination-container'}
                 previousLinkClassName={'page'}
                 breakClassName={'page'}
                 nextLinkClassName={'page'}
                 pageClassName={'page'}
                 disabledClassName={'disabled'}
                 activeClassName={'active'}
+                previousLabel={'<'}
+                nextLabel={'>'}
             />
-        </>
+        </div>
     )
 }
 

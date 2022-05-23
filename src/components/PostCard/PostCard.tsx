@@ -3,6 +3,10 @@ import React from 'react';
 import TimeAgo from 'javascript-time-ago'
 import en from 'javascript-time-ago/locale/en.json'
 
+import favorited from "../../assets/iconmonstr-favorite-1.png"
+import unfavorited from "../../assets/iconmonstr-favorite-2.png"
+
+import './PostCard.css';
 
 TimeAgo.addDefaultLocale(en)
 
@@ -25,20 +29,27 @@ function PostCard(props: PostCardProps) {
 
     const timeAgo = new TimeAgo('en-US')
 
-    function onClickHandler() {
+    function onFavoriteClickHandler(e: React.FormEvent<HTMLImageElement>) {
+        e.stopPropagation()
         const action = props.isFavorite ? "unfavorite" : "favorite"
         props.manageFavorites(action, props.post)
     }
 
-    return (
-        <div className='post'>
-            <p>Author: {props.post.author}</p>
-            <p>Title: {props.post.story_title}</p>
-            <p>Url: {props.post.story_url}</p>
-            <p>Created at: {timeAgo.format(Date.parse(props.post.created_at))}</p>
-            <button onClick={onClickHandler}>{props.isFavorite ? "unfavorite" : "favorite"}</button>
+    function onCardClickHandler() {
+        window.open(props.post.story_url, "_blank")
+    }
 
-            <hr />
+    return (
+        <div className='card-container col-6'>
+            <div className='post-card' onClick={onCardClickHandler} >
+                <div className='desc center'>
+                    <p className='time-author'>{timeAgo.format(Date.parse(props.post.created_at))} by {props.post.author}</p>
+                    <p className='title'>{props.post.story_title}</p>
+                </div>
+                <div className='favorite center'>
+                    <img src={props.isFavorite ? favorited : unfavorited} alt="favorite" onClick={onFavoriteClickHandler} />
+                </div>
+            </div>
         </div>
     );
 }
