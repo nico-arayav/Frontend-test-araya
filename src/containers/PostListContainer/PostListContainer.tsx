@@ -63,6 +63,7 @@ function PostListContainer() {
     // Initialization
     useEffect(function () {
         // Data fetch
+        fetchPosts()
         const savedSelectedQuery = localStorage.getItem('selectedQuery') ?? "";
         setSelectedQuery(savedSelectedQuery);
         const savedFavoritePosts = JSON.parse(localStorage.getItem('favoritePosts') ?? "[]");
@@ -72,7 +73,7 @@ function PostListContainer() {
         window.addEventListener("resize", handleResize);
         handleResize()
         return () => window.removeEventListener("resize", handleResize);
-    }, [])
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
 
     // Handle state changes in 'all' view 
